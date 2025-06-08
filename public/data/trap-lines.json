@@ -1,0 +1,252 @@
+{
+  "trapAssignments": {
+    "comment": "Explicit mapping of trap IDs to line IDs - more reliable than pattern matching",
+    "assignments": [
+      {
+        "trapId": "3792941",
+        "lineId": "24527073",
+        "note": "Explicit assignment example"
+      }
+    ],
+    "bulkAssignments": [
+      {
+        "lineId": "0000000",
+        "lineName": "Unknown",
+        "trapCodes": [
+          "MK02",
+          "MK Chooks",
+          "MK Chooks 2",
+          "MK Chooks 3",
+          "MK Chooks DOC200"
+        ]
+      },
+      {
+        "lineId": "32189872",
+        "lineName": "Northern Line",
+        "trapCodes": [
+          "MK00",
+          "MK01",
+          "MK03",
+          "MK04",
+          "MK05",
+          "MK06",
+          "MK07"
+        ]
+      },
+      {
+        "lineId": "top-line",
+        "lineName": "Top Line",
+        "trapCodes": [
+          "MK08",
+          "MK15",
+          "MK20",
+          "MK09",
+          "MK16",
+          "MK17",
+          "MK18",
+          "MK19"
+        ]
+      },
+      {
+        "lineId": "24527073",
+        "lineName": "MK Southern Line",
+        "trapCodes": [
+          "MK10",
+          "MK11",
+          "MK12",
+          "MK13",
+          "MK14",
+          "MK21",
+          "MK22"
+        ]
+      },
+      {
+        "lineId": "northern-line",
+        "lineName": "Northern Line",
+        "trapCodes": [
+          "P1",
+          "P2",
+          "P3",
+          "P4",
+          "P5",
+          "P6",
+          "P7",
+          "P8",
+          "P9",
+          "P10",
+          "P11",
+          "P12",
+          "P13",
+          "P14",
+          "P17",
+          "P18",
+          "P4 - ribble st entrance"
+        ]
+      },
+      {
+        "lineId": "tawatawa-reserve",
+        "lineName": "Tawatawa Reserve",
+        "trapCodes": [
+          "TR01",
+          "TR02",
+          "TR03",
+          "TR04",
+          "TR05",
+          "TR06",
+          "TR07",
+          "TR08",
+          "TR09",
+          "TR10",
+          "TR11",
+          "TR12",
+          "TR13",
+          "TR14",
+          "TR15",
+          "TR16",
+          "TR17",
+          "TR18",
+          "TR19",
+          "TR20",
+          "TR21",
+          "TR22",
+          "TR23",
+          "TR24",
+          "TR25",
+          "TR26",
+          "TR27",
+          "TR28",
+          "TR29",
+          "TR30",
+          "TR31",
+          "TR32",
+          "TR33",
+          "TR34",
+          "TR35",
+          "TR01M",
+          "TR03M",
+          "TR05M",
+          "TR06M",
+          "TR07M",
+          "TR09M",
+          "TR10M"
+        ]
+      },
+      {
+        "lineId": "eastern",
+        "lineName": "Eastern",
+        "trapCodes": [
+          "E01",
+          "E02",
+          "E03",
+          "E04",
+          "E05"
+        ]
+      },
+      {
+        "lineId": "line-a",
+        "lineName": "Line A",
+        "trapCodes": [
+          "A01",
+          "A02",
+          "A03",
+          "A04",
+          "A05"
+        ]
+      },
+      {
+        "lineId": "line-b",
+        "lineName": "Line B",
+        "trapCodes": [
+          "B01",
+          "B02",
+          "B03",
+          "B04",
+          "B05"
+        ]
+      },
+      {
+        "lineId": "line-c",
+        "lineName": "Line C",
+        "trapCodes": [
+          "C01",
+          "C02",
+          "C03",
+          "C04",
+          "C05"
+        ]
+      },
+      {
+        "lineId": "loop",
+        "lineName": "Loop",
+        "trapCodes": [
+          "L01",
+          "L02",
+          "L03",
+          "L04",
+          "L05"
+        ]
+      },
+      {
+        "lineId": "western",
+        "lineName": "Western",
+        "trapCodes": [
+          "W01",
+          "W02",
+          "W03",
+          "W04",
+          "W05"
+        ]
+      },
+      {
+        "lineId": "manawa-karioi",
+        "lineName": "Manawa Karioi",
+        "trapCodes": [
+          "MAN01",
+          "MAN02",
+          "MAN03",
+          "MAN04",
+          "MAN05"
+        ]
+      },
+      {
+        "lineId": "wetlands",
+        "lineName": "Wetlands",
+        "trapCodes": [
+          "WET01",
+          "WET02",
+          "WET03",
+          "WET04",
+          "WET05"
+        ]
+      },
+      {
+        "lineId": "paekawakawa-2",
+        "lineName": "Paekawakawa 2",
+        "trapCodes": [
+          "PK01",
+          "PK02",
+          "PK03",
+          "PK04",
+          "PK05"
+        ]
+      }
+    ],
+    "fallbackPatterns": [
+      {
+        "pattern": "MK*",
+        "lineId": "24527073",
+        "description": "Fallback for MK prefixed traps"
+      },
+      {
+        "pattern": "P*",
+        "lineId": "northern-line",
+        "description": "Fallback for P prefixed traps"
+      },
+      {
+        "pattern": "T*",
+        "lineId": "tawatawa-reserve",
+        "description": "Fallback for T prefixed traps"
+      }
+    ]
+  }
+}

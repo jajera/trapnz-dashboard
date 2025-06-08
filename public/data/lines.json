@@ -1,0 +1,379 @@
+{
+  "lines": [
+    {
+      "id": "24527073",
+      "name": "MK Southern Line",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Southern section of the MK line",
+      "coordinates": {
+        "start": [
+          174.7684,
+          -41.3365
+        ],
+        "end": [
+          174.7695,
+          -41.3369
+        ]
+      },
+      "trapIds": [
+        "3792941"
+      ],
+      "color": "#28a745",
+      "manager": "MK Team"
+    },
+    {
+      "id": "32189872",
+      "name": "Northern Line",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Northern section of the MK line",
+      "coordinates": {
+        "start": [
+          174.7695,
+          -41.3295
+        ],
+        "end": [
+          174.7661,
+          -41.3284
+        ]
+      },
+      "trapIds": [
+        "3792941"
+      ],
+      "color": "#28a745",
+      "manager": "MK Team"
+    },
+    {
+      "id": "eastern",
+      "name": "Eastern",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Eastern trapping line",
+      "coordinates": {
+        "start": [
+          174.77,
+          -41.336
+        ],
+        "end": [
+          174.772,
+          -41.334
+        ]
+      },
+      "trapIds": [],
+      "color": "#17a2b8",
+      "manager": "Eastern Team"
+    },
+    {
+      "id": "line-a",
+      "name": "Line A",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Line A section",
+      "coordinates": {
+        "start": [
+          174.765,
+          -41.337
+        ],
+        "end": [
+          174.767,
+          -41.335
+        ]
+      },
+      "trapIds": [],
+      "color": "#fd7e14",
+      "manager": "Line A Team"
+    },
+    {
+      "id": "line-b",
+      "name": "Line B",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Line B section",
+      "coordinates": {
+        "start": [
+          174.766,
+          -41.338
+        ],
+        "end": [
+          174.768,
+          -41.336
+        ]
+      },
+      "trapIds": [],
+      "color": "#e83e8c",
+      "manager": "Line B Team"
+    },
+    {
+      "id": "line-c",
+      "name": "Line C",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Line C section",
+      "coordinates": {
+        "start": [
+          174.767,
+          -41.339
+        ],
+        "end": [
+          174.769,
+          -41.337
+        ]
+      },
+      "trapIds": [],
+      "color": "#6f42c1",
+      "manager": "Line C Team"
+    },
+    {
+      "id": "loop",
+      "name": "Loop",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Loop trapping line",
+      "coordinates": {
+        "start": [
+          174.768,
+          -41.34
+        ],
+        "end": [
+          174.77,
+          -41.338
+        ]
+      },
+      "trapIds": [],
+      "color": "#20c997",
+      "manager": "Loop Team"
+    },
+    {
+      "id": "manawa-karioi",
+      "name": "Manawa Karioi",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Manawa Karioi line",
+      "coordinates": {
+        "start": [
+          174.764,
+          -41.335
+        ],
+        "end": [
+          174.766,
+          -41.333
+        ]
+      },
+      "trapIds": [],
+      "color": "#6610f2",
+      "manager": "Manawa Team"
+    },
+    {
+      "id": "northern-line",
+      "name": "Northern Line",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Northern trapping line",
+      "coordinates": {
+        "start": [
+          174.7685,
+          -41.332
+        ],
+        "end": [
+          174.7705,
+          -41.33
+        ]
+      },
+      "trapIds": [],
+      "color": "#007bff",
+      "manager": "Northern Team"
+    },
+    {
+      "id": "top-line",
+      "name": "Top Line",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Top section line",
+      "coordinates": {
+        "start": [
+          174.769,
+          -41.331
+        ],
+        "end": [
+          174.771,
+          -41.329
+        ]
+      },
+      "trapIds": [],
+      "color": "#ffc107",
+      "manager": "Top Team"
+    },
+    {
+      "id": "western",
+      "name": "Western",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Western trapping line",
+      "coordinates": {
+        "start": [
+          174.762,
+          -41.338
+        ],
+        "end": [
+          174.764,
+          -41.336
+        ]
+      },
+      "trapIds": [],
+      "color": "#dc3545",
+      "manager": "Western Team"
+    },
+    {
+      "id": "wetlands",
+      "name": "Wetlands",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Wetlands trapping line",
+      "coordinates": {
+        "start": [
+          174.76,
+          -41.34
+        ],
+        "end": [
+          174.762,
+          -41.338
+        ]
+      },
+      "trapIds": [],
+      "color": "#198754",
+      "manager": "Wetlands Team"
+    },
+    {
+      "id": "tawatawa-reserve",
+      "name": "Tawatawa Reserve",
+      "projectId": "2975075",
+      "projectName": "Tawatawa Reserve",
+      "description": "Main trapping line through Tawatawa Reserve",
+      "coordinates": {
+        "start": [
+          174.765,
+          -41.34
+        ],
+        "end": [
+          174.772,
+          -41.338
+        ]
+      },
+      "trapIds": [],
+      "color": "#d63384",
+      "manager": "Reserve Team"
+    },
+    {
+      "id": "paekawakawa-2",
+      "name": "Paekawakawa 2",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Paekawakawa section 2",
+      "coordinates": {
+        "start": [
+          174.771,
+          -41.337
+        ],
+        "end": [
+          174.773,
+          -41.335
+        ]
+      },
+      "trapIds": [],
+      "color": "#495057",
+      "manager": "Paekawakawa Team"
+    },
+    {
+      "id": "0000000",
+      "name": "Unknown",
+      "projectId": "1039098",
+      "projectName": "Paekawakawa Pest Patrol",
+      "description": "Traps with unknown or unassigned locations",
+      "coordinates": {
+        "start": [
+          174.765,
+          -41.335
+        ],
+        "end": [
+          174.766,
+          -41.336
+        ]
+      },
+      "trapIds": [],
+      "color": "#6c757d",
+      "manager": "Unassigned"
+    }
+  ],
+  "lineAssignments": {
+    "detectLines": true,
+    "defaultLineId": "northern-line",
+    "patterns": [
+      {
+        "pattern": "MK*",
+        "lineId": "24527073",
+        "description": "Traps with codes starting with MK"
+      },
+      {
+        "pattern": "P*",
+        "lineId": "northern-line",
+        "description": "Traps with codes starting with P"
+      },
+      {
+        "pattern": "T*",
+        "lineId": "tawatawa-reserve",
+        "description": "Traps with codes starting with T"
+      },
+      {
+        "pattern": "E*",
+        "lineId": "eastern",
+        "description": "Traps with codes starting with E"
+      },
+      {
+        "pattern": "A*",
+        "lineId": "line-a",
+        "description": "Traps with codes starting with A"
+      },
+      {
+        "pattern": "B*",
+        "lineId": "line-b",
+        "description": "Traps with codes starting with B"
+      },
+      {
+        "pattern": "C*",
+        "lineId": "line-c",
+        "description": "Traps with codes starting with C"
+      },
+      {
+        "pattern": "L*",
+        "lineId": "loop",
+        "description": "Traps with codes starting with L"
+      },
+      {
+        "pattern": "W*",
+        "lineId": "western",
+        "description": "Traps with codes starting with W"
+      },
+      {
+        "pattern": "MAN*",
+        "lineId": "manawa-karioi",
+        "description": "Traps with codes starting with MAN"
+      },
+      {
+        "pattern": "WET*",
+        "lineId": "wetlands",
+        "description": "Traps with codes starting with WET"
+      },
+      {
+        "pattern": "PK*",
+        "lineId": "paekawakawa-2",
+        "description": "Traps with codes starting with PK"
+      },
+      {
+        "pattern": "UNKNOWN*",
+        "lineId": "0000000",
+        "description": "Traps with unknown codes"
+      }
+    ]
+  }
+}

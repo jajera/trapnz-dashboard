@@ -1,0 +1,32 @@
+{
+  "name": "trapnz-dashboard",
+  "version": "1.0.0",
+  "description": "Trap.NZ Insights Dashboard",
+  "type": "module",
+  "scripts": {
+    "dev": "node -r dotenv/config server.js",
+    "build": "node scripts/fetch-live-data.js",
+    "start": "node -r dotenv/config server.js",
+    "fetch-data": "node scripts/fetch-live-data.js",
+    "serve-static": "npx serve public",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:api": "vitest run test/api.test.js",
+    "test:frontend": "vitest run test/frontend.test.js",
+    "test:integration": "vitest run test/integration.test.js",
+    "validate": "node test-and-validate.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "express": "^4.18.2",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "serve": "^14.2.1",
+    "vitest": "^1.0.4",
+    "supertest": "^6.3.3",
+    "jsdom": "^23.0.1",
+    "@vitest/coverage-v8": "^1.0.4"
+  }
+}

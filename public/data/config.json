@@ -1,0 +1,92 @@
+{
+  "needsAttention": {
+    "daysWithoutCheck": 7,
+    "daysWithoutUpdate": 14,
+    "lowEfficiencyThreshold": 10,
+    "description": "Traps requiring maintenance or attention"
+  },
+  "efficiency": {
+    "calculation": "strikes",
+    "description": "Efficiency based on successful catches (strikes) vs total checks",
+    "thresholds": {
+      "high": 20,
+      "medium": 10,
+      "low": 0
+    }
+  },
+  "timeFilters": {
+    "default": 3,
+    "options": [
+      {
+        "value": 1,
+        "label": "Last Month"
+      },
+      {
+        "value": 3,
+        "label": "Last 3 Months"
+      },
+      {
+        "value": 6,
+        "label": "Last 6 Months"
+      },
+      {
+        "value": 12,
+        "label": "Last Year"
+      },
+      {
+        "value": 999,
+        "label": "All Time"
+      }
+    ]
+  },
+  "dashboard": {
+    "autoRefreshMinutes": 5,
+    "maxTrapsPerPage": 100,
+    "enableMapView": true,
+    "enableBulkOperations": true,
+    "enablePhotoUpload": false
+  },
+  "maps": {
+    "defaultCenter": [
+      -41.3369,
+      174.7697
+    ],
+    "defaultZoom": 12,
+    "clusterDistance": 50
+  },
+  "alerts": {
+    "enabled": true,
+    "checkMaintenanceSchedule": true,
+    "notifyInactiveTraps": true,
+    "thresholds": {
+      "recentCatchDays": 7,
+      "dailyCatchHours": 24,
+      "inactiveHighPerformerDays": 7,
+      "recentSuccessHours": 24,
+      "maintenanceOverdueDays": 14,
+      "minChecksForLowEfficiency": 5,
+      "minChecksForAnomaly": 10,
+      "anomalyEfficiencyMultiplier": 0.3
+    },
+    "priorities": {
+      "critical": 1,
+      "high": 2,
+      "medium": 3,
+      "info": 4
+    }
+  },
+  "performance": {
+    "anomalyDetection": {
+      "efficiencyMultiplier": 0.3,
+      "minChecksRequired": 10,
+      "spikeMultiplier": 3,
+      "minCatchesForSpike": 10
+    },
+    "maintenance": {
+      "schedulingDays": 30,
+      "usageWeighting": 0.3,
+      "efficiencyWeighting": 0.4,
+      "ageWeighting": 0.3
+    }
+  }
+}

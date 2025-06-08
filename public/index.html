@@ -1,0 +1,2619 @@
+<div class="global-time-filter"
+    style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <label style="font-weight: 600; color: #495057;">📅 Time Period:</label>
+        <select id="globalTimeFilter" onchange="onGlobalTimeFilterChange()"
+            style="padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px;">
+            <option value="1">Last Month</option>
+            <option value="3" selected>Last 3 Months</option>
+            <option value="6">Last 6 Months</option>
+            <option value="12">Last Year</option>
+            <option value="999">All Time</option>
+        </select>
+        <span style="color: #6c757d; font-size: 13px;">All dashboard data will update based on this filter</span>
+    </div>
+</div>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trap.NZ Insights Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            font-weight: 300;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .project-selector {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .project-select {
+            font-size: 1.1em;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.9);
+            min-width: 250px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .project-select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .clickable {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clickable:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .clickable:active {
+            transform: translateY(-3px);
+        }
+
+        .metric-card {
+            text-align: center;
+        }
+
+        .metric-card .icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .metric-card h3 {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metric-card .number {
+            font-size: 2.8em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-card .subtitle {
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .insights-section {
+            margin-top: 40px;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .insight-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .insight-card h3 {
+            color: #444;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .project-list {
+            list-style: none;
+        }
+
+        .project-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .project-item:last-child {
+            border-bottom: none;
+        }
+
+        .project-name {
+            font-weight: 600;
+            color: #444;
+        }
+
+        .project-region {
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .project-stats {
+            text-align: right;
+        }
+
+        .project-efficiency {
+            font-weight: 700;
+            color: #4CAF50;
+        }
+
+        .project-traps {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .additional-insights {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .insight-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .insight-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        .insight-label {
+            margin-right: 8px;
+            color: #666;
+        }
+
+        .insight-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Improve Key Insights visibility */
+        .summary-stats {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-stats h3 {
+            color: #333 !important;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .summary-stats .summary-stat {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .summary-stat .value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #333 !important;
+            margin-bottom: 5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-stat .label {
+            font-size: 0.9em;
+            color: #555 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .close:hover {
+            opacity: 1;
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: calc(90vh - 80px);
+            overflow-y: auto;
+        }
+
+        .filter-controls {
+            margin-bottom: 20px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-controls select,
+        .filter-controls input,
+        .filter-controls button {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            min-width: 120px;
+            background: white;
+        }
+
+        .filter-controls input {
+            flex: 2;
+            min-width: 200px;
+        }
+
+        .filter-controls button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+
+        .filter-controls button:hover {
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .filter-row {
+                flex-direction: column;
+            }
+
+            .filter-controls select,
+            .filter-controls input,
+            .filter-controls button {
+                min-width: 100%;
+            }
+        }
+
+        .trap-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .summary-label {
+            font-weight: 600;
+        }
+
+        .trap-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 15px;
+        }
+
+        .trap-item {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .trap-item {
+            cursor: pointer;
+        }
+
+        .trap-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            background: #f8f9fa;
+        }
+
+        .trap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .trap-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .trap-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .trap-details {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .trap-metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+
+        .trap-metric-label {
+            font-weight: 500;
+        }
+
+        .trap-metric-value {
+            color: #333;
+        }
+
+        .efficiency-high {
+            color: #28a745;
+        }
+
+        .efficiency-medium {
+            color: #ffc107;
+        }
+
+        .efficiency-low {
+            color: #dc3545;
+        }
+
+        /* History Modal Styles */
+        .history-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .history-stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .history-stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .history-stat-label {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .history-timeline {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .timeline-item {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ddd;
+            position: relative;
+        }
+
+        .timeline-item.catch {
+            border-left-color: #28a745;
+        }
+
+        .timeline-item.maintenance {
+            border-left-color: #ffc107;
+        }
+
+        .timeline-item.issue {
+            border-left-color: #dc3545;
+        }
+
+        .timeline-date {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .timeline-status {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .timeline-species {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            display: inline-block;
+            margin: 2px;
+        }
+
+        .timeline-notes {
+            font-style: italic;
+            color: #666;
+            margin-top: 8px;
+            font-size: 0.9em;
+        }
+
+        /* New Feature Buttons */
+        #exportBtn,
+        .map-btn,
+        .bulk-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin: 0 5px;
+            transition: background 0.2s;
+        }
+
+        #exportBtn:hover,
+        .map-btn:hover,
+        .bulk-btn:hover {
+            background: #218838;
+        }
+
+        .map-btn {
+            background: #007bff;
+        }
+
+        .map-btn:hover {
+            background: #0056b3;
+        }
+
+        .bulk-btn {
+            background: #6f42c1;
+        }
+
+        .bulk-btn:hover {
+            background: #5a32a3;
+        }
+
+        /* Map Modal */
+        #mapModal .modal-content {
+            width: 90%;
+            max-width: 1200px;
+            height: 80vh;
+        }
+
+        #mapContainer {
+            width: 100%;
+            height: 500px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* Bulk Operations */
+        .bulk-controls {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .bulk-action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .bulk-action-btn.mark-checked {
+            background: #28a745;
+            color: white;
+        }
+
+        .bulk-action-btn.mark-attention {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .trap-checkbox {
+            margin-right: 10px;
+        }
+
+        .loading,
+        .error {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            margin: 20px 0;
+        }
+
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+
+        .error {
+            color: #e74c3c;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-stat {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .summary-stat .value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: white;
+        }
+
+        .summary-stat .label {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🕸️ Trap.NZ Insights</h1>
+            <p>Real-time pest control monitoring and analytics</p>
+            <div style="margin-top: 15px;">
+                <a href="/analytics.html"
+                    style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-weight: 500; backdrop-filter: blur(10px); transition: all 0.3s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    🔍 Advanced Analytics
+                </a>
+            </div>
+        </div>
+
+        <div class="project-selector">
+            <select id="projectSelect" class="project-select">
+                <option value="all">📊 All Projects Overview</option>
+            </select>
+        </div>
+
+        <div id="loading" class="loading">
+            🔄 Loading trap data and generating insights...
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            ❌ Failed to load data. Please check your connection and try again.
+        </div>
+
+        <div id="dashboard" style="display: none;">
+            <div class="dashboard-grid">
+                <div class="card metric-card clickable" onclick="showTrapDetails('all')"
+                    title="Click to view all traps">
+                    <div class="icon">🎯</div>
+                    <h3>Total Traps</h3>
+                    <div class="number" id="totalTraps">-</div>
+                    <div class="subtitle">Active monitoring stations</div>
+                </div>
+
+                <div class="card metric-card clickable" onclick="showTrapDetails('active')"
+                    title="Click to view active traps">
+                    <div class="icon">✅</div>
+                    <h3>Active Traps</h3>
+                    <div class="number" id="activeTraps">-</div>
+                    <div class="subtitle">Currently operational</div>
+                </div>
+
+                <div class="card metric-card clickable" onclick="showTrapDetails('needsCheck')"
+                    title="Click to view traps needing attention">
+                    <div class="icon">⚠️</div>
+                    <h3>Need Attention</h3>
+                    <div class="number" id="needsCheck">-</div>
+                    <div class="subtitle">Require maintenance</div>
+                </div>
+
+                <div class="card metric-card clickable" onclick="showTrapDetails('recentCatches')"
+                    title="Click to view recent catches">
+                    <div class="icon">🎉</div>
+                    <h3>Recent Catches</h3>
+                    <div class="number" id="recentCatches">-</div>
+                    <div class="subtitle">This week</div>
+                </div>
+
+                <div class="card metric-card" title="Today's catch activity">
+                    <div class="icon">📅</div>
+                    <h3>Daily Catches</h3>
+                    <div class="number" id="dailyCatches">-</div>
+                    <div class="subtitle">Today</div>
+                </div>
+
+                <div class="card metric-card" title="Average trap efficiency">
+                    <div class="icon">⚡</div>
+                    <h3>Avg Efficiency</h3>
+                    <div class="number" id="avgEfficiency">-</div>
+                    <div class="subtitle">Overall performance</div>
+                </div>
+
+                <div class="card metric-card" title="Most frequently caught species">
+                    <div class="icon">🦎</div>
+                    <h3>Top Species</h3>
+                    <div class="number" id="mostActiveSpecies">-</div>
+                    <div class="subtitle">Most active</div>
+                </div>
+
+                <div class="card metric-card" title="Best performing trap line">
+                    <div class="icon">🏆</div>
+                    <h3>Top Line</h3>
+                    <div class="number" id="topPerformingLine">-</div>
+                    <div class="subtitle">Best efficiency</div>
+                </div>
+            </div>
+
+            <div class="insights-section">
+                <div class="insights-grid">
+                    <div class="insight-card">
+                        <h3>📈 Key Insights</h3>
+                        <div class="summary-stats" id="summaryStats">
+                            <!-- Will be populated by JS -->
+                        </div>
+                        <div class="additional-insights" id="additionalInsights">
+                            <!-- Additional insights will be populated here -->
+                        </div>
+                        <div style="margin-top: 15px; text-align: center;">
+                            <span style="font-size: 0.9em; color: #666;">
+                                📊 Total Lines: <strong id="totalLines">-</strong> |
+                                🎯 Traps with Lines: <strong id="trapsWithLines">-</strong>
+                            </span>
+                        </div>
+                        <div id="performanceIndicator"
+                            style="margin-top: 20px; padding: 15px; background: linear-gradient(45deg, #667eea, #764ba2); border-radius: 12px; color: white; text-align: center;">
+                            <div style="font-size: 1.1em; font-weight: 600; margin-bottom: 8px;">📈 Real-time
+                                Performance</div>
+                            <div id="performanceText" style="font-size: 0.9em; opacity: 0.9;">Loading performance
+                                indicators...</div>
+                        </div>
+
+                        <div id="alertsSection" style="margin-top: 20px;">
+                            <h4 style="color: #333; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                                🚨 Real-time Alerts <span id="alertBadge"
+                                    style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">0</span>
+                            </h4>
+                            <div id="alertsList" style="max-height: 200px; overflow-y: auto;">
+                                Loading alerts...
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="insight-card">
+                        <h3>🏆 Top Performing Projects</h3>
+                        <ul class="project-list" id="topProjects">
+                            <!-- Will be populated by JS -->
+                        </ul>
+                    </div>
+
+                    <div class="insight-card">
+                        <h3>📏 Top Performing Lines</h3>
+                        <ul class="project-list" id="topLines">
+                            <!-- Will be populated by JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for detailed trap information -->
+    <div id="trapModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Trap Details</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="filter-controls">
+                    <div class="filter-row">
+                        <select id="projectFilter" onchange="filterModalData()">
+                            <option value="all">All Projects</option>
+                        </select>
+                        <select id="lineFilter" onchange="filterModalData()" title="Filter by line">
+                            <option value="all">All Lines</option>
+                        </select>
+                        <select id="statusFilter" onchange="filterModalData()" title="Filter by trap status">
+                            <option value="all">All Status</option>
+                            <option value="active">Active Only</option>
+                            <option value="inactive">Inactive Only</option>
+                        </select>
+                        <select id="needsAttentionFilter" onchange="filterModalData()"
+                            title="Filter by attention needed">
+                            <option value="all">All Traps</option>
+                            <option value="yes">Needs Attention</option>
+                            <option value="no">No Attention Needed</option>
+                        </select>
+                    </div>
+                    <div class="filter-row">
+                        <select id="efficiencyFilter" onchange="filterModalData()" title="Filter by efficiency">
+                            <option value="all">All Efficiency</option>
+                            <option value="high">High (≥20%)</option>
+                            <option value="medium">Medium (10-20%)</option>
+                            <option value="low">Low (<10%)< /option>
+                        </select>
+                        <select id="sortBy" onchange="filterModalData()" title="Sort traps by">
+                            <option value="efficiency">Sort by Efficiency</option>
+                            <option value="lastUpdate">Sort by Last Update</option>
+                            <option value="catches">Sort by Catches</option>
+                            <option value="name">Sort by Name</option>
+                            <option value="project">Sort by Project</option>
+                        </select>
+                        <select id="sortOrder" onchange="filterModalData()" title="Sort order">
+                            <option value="desc">Descending</option>
+                            <option value="asc">Ascending</option>
+                        </select>
+                    </div>
+                    <div class="filter-row">
+                        <input type="text" id="searchFilter"
+                            placeholder="Search by trap code, type, project, species..." oninput="filterModalData()">
+                        <button id="exportBtn" onclick="exportToCSV()" title="Export to CSV">📊 Export CSV</button>
+                        <button class="map-btn" onclick="showMapView()" title="View traps on map">
+                            🗺️ Map View
+                        </button>
+                        <button class="bulk-btn" onclick="showBulkOperations()" title="Bulk operations">
+                            ✅ Bulk Actions
+                        </button>
+                    </div>
+                </div>
+                <div id="modalLoading" class="loading">Loading trap details...</div>
+                <div id="modalError" class="error" style="display: none;">
+                    <p>❌ Failed to load trap details. Please try again.</p>
+                </div>
+                <div id="modalContent" style="display: none;">
+                    <div class="trap-summary">
+                        <div class="summary-item">
+                            <span class="summary-label">Showing:</span>
+                            <span id="showingCount">0</span> of <span id="totalCount">0</span> traps
+                        </div>
+                    </div>
+                    <div id="trapList" class="trap-list">
+                        <!-- Trap details will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trap History Modal -->
+    <div id="trapHistoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="historyModalTitle">Trap History</h2>
+                <span class="close" onclick="closeTrapHistoryModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="historyLoading" class="loading">Loading trap history...</div>
+                <div id="historyError" class="error" style="display: none;">
+                    <p>❌ Failed to load trap history. Please try again.</p>
+                </div>
+                <div id="historyContent" style="display: none;">
+                    <div class="history-stats" id="historyStats">
+                        <!-- Statistics will be populated here -->
+                    </div>
+                    <div class="history-timeline" id="historyTimeline">
+                        <!-- Timeline will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map View Modal -->
+    <div id="mapModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🗺️ Trap Locations Map</h2>
+                <span class="close" onclick="closeMapModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="mapContainer">
+                    <div style="padding: 50px; text-align: center; color: #666;">
+                        🗺️ Interactive map will be displayed here<br>
+                        <small>Showing trap locations with status indicators</small>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; font-size: 0.9em; color: #666;">
+                    <span style="color: #28a745;">●</span> Active Traps &nbsp;&nbsp;
+                    <span style="color: #dc3545;">●</span> Needs Attention &nbsp;&nbsp;
+                    <span style="color: #6c757d;">●</span> Inactive
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Operations Modal -->
+    <div id="bulkModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✅ Bulk Operations</h2>
+                <span class="close" onclick="closeBulkModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="bulk-controls">
+                    <div style="margin-bottom: 10px;">
+                        <label>
+                            <input type="checkbox" id="selectAllTraps" onchange="toggleSelectAll()">
+                            Select All Visible Traps
+                        </label>
+                        <span id="selectedCount" style="margin-left: 15px; color: #666;">0 selected</span>
+                    </div>
+                    <div class="bulk-actions">
+                        <button class="bulk-action-btn mark-checked" onclick="bulkMarkAsChecked()">
+                            ✅ Mark as Checked
+                        </button>
+                        <button class="bulk-action-btn mark-attention" onclick="bulkMarkNeedsAttention()">
+                            ⚠️ Mark Needs Attention
+                        </button>
+                        <button class="bulk-action-btn" onclick="bulkExportSelected()"
+                            style="background: #17a2b8; color: white;">
+                            📊 Export Selected
+                        </button>
+                    </div>
+                </div>
+                <div id="bulkTrapList">
+                    <!-- Trap list with checkboxes will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentData = null;
+        let currentTimeFilter = '3';
+
+        // Global time filter change handler
+        function onGlobalTimeFilterChange() {
+            const newTimeFilter = document.getElementById('globalTimeFilter').value;
+            currentTimeFilter = newTimeFilter;
+
+
+
+            // Reload all data with new time filter
+            const currentProject = document.getElementById('projectSelect')?.value || 'all';
+            loadData(currentProject);
+
+            // Update alerts with new time filter
+            loadAlerts(newTimeFilter);
+        }
+        let insightsData = null;
+
+        async function fetchProjects() {
+            try {
+                const response = await fetch('/api/projects');
+                if (!response.ok) throw new Error('Failed to fetch projects');
+                const projects = await response.json();
+
+                const select = document.getElementById('projectSelect');
+                select.length = 1; // Keep only "All Projects"
+
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = `${project.name} (${project.region})`;
+                    select.appendChild(option);
+                });
+
+                return projects;
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                throw error;
+            }
+        }
+
+        async function fetchTrapStatus(projectId = 'all', months = null) {
+            try {
+                // Get time filter from dropdown or use parameter
+                const timeFilter = months || document.getElementById('globalTimeFilter')?.value || '3';
+
+                const url = projectId === 'all'
+                    ? `/api/traps/status?months=${timeFilter}`
+                    : `/api/traps/status?projectId=${projectId}&months=${timeFilter}`;
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Failed to fetch trap status');
+                return await response.json();
+            } catch (error) {
+                console.error('Error loading trap status:', error);
+                throw error;
+            }
+        }
+
+        async function fetchInsights(months = null) {
+            try {
+                const timeFilter = months || currentTimeFilter || '3';
+                const response = await fetch(`/api/insights?months=${timeFilter}`);
+                if (!response.ok) throw new Error('Failed to fetch insights');
+                return await response.json();
+            } catch (error) {
+                console.error('Error loading insights:', error);
+                throw error;
+            }
+        }
+
+        function updateDashboard(data, insights) {
+            // Update main metrics
+            document.getElementById('totalTraps').textContent = data.total.toLocaleString();
+            document.getElementById('activeTraps').textContent = data.active.toLocaleString();
+            document.getElementById('needsCheck').textContent = data.needsCheck.toLocaleString();
+            document.getElementById('recentCatches').textContent = data.recentCatches.toLocaleString();
+            document.getElementById('totalLines').textContent = data.totalLines || '-';
+            document.getElementById('trapsWithLines').textContent = data.trapsWithLines || '-';
+
+            // Update enhanced metrics
+            document.getElementById('dailyCatches').textContent = data.dailyCatches || '0';
+            document.getElementById('avgEfficiency').textContent = data.avgEfficiency ? data.avgEfficiency + '%' : '-';
+            document.getElementById('mostActiveSpecies').textContent = data.mostActiveSpecies || 'None';
+            document.getElementById('topPerformingLine').textContent = data.topPerformingLine || 'None';
+
+            // Update performance indicator
+            const performanceIndicators = [];
+            if (data.dailyCatches > 0) {
+                performanceIndicators.push(`🔥 ${data.dailyCatches} catches today`);
+            }
+            if (data.recentCatches > 0) {
+                performanceIndicators.push(`📊 ${data.recentCatches} catches this week`);
+            }
+            if (data.avgEfficiency > 15) {
+                performanceIndicators.push(`⚡ High efficiency: ${data.avgEfficiency}%`);
+            } else if (data.avgEfficiency > 10) {
+                performanceIndicators.push(`📈 Moderate efficiency: ${data.avgEfficiency}%`);
+            } else {
+                performanceIndicators.push(`📉 Low efficiency: ${data.avgEfficiency}%`);
+            }
+
+            const performanceText = performanceIndicators.length > 0 ?
+                performanceIndicators.join(' • ') :
+                '🔍 Monitoring trap performance...';
+            document.getElementById('performanceText').textContent = performanceText;
+
+            // Load real-time alerts with current time filter
+            loadAlerts(currentTimeFilter);
+
+            // Update summary stats
+            const summaryStats = document.getElementById('summaryStats');
+            if (insights) {
+                summaryStats.innerHTML = `
+                    <div class="summary-stat">
+                        <div class="value">${insights.summary.totalProjects}</div>
+                        <div class="label">Active Projects</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="value">${insights.summary.totalLines || 0}</div>
+                        <div class="label">Trap Lines</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="value">${insights.summary.averageTrapsPerProject}</div>
+                        <div class="label">Avg Traps/Project</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="value">${insights.summary.overallEfficiency}%</div>
+                        <div class="label">Overall Efficiency</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="value">${insights.summary.totalCatches.toLocaleString()}</div>
+                        <div class="label">Total Catches</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="value">${insights.summary.trapsWithLines || 0}</div>
+                        <div class="label">Traps in Lines</div>
+                    </div>
+                `;
+
+                // Update additional insights
+                const additionalInsights = document.getElementById('additionalInsights');
+                additionalInsights.innerHTML = `
+                    <div class="insight-row">
+                        <div class="insight-item">
+                            <span class="insight-label">📝 Raw Records:</span>
+                            <span class="insight-value">${insights.summary.totalRawRecords.toLocaleString()}</span>
+                        </div>
+                        <div class="insight-item">
+                            <span class="insight-label">📅 Weekly Activity:</span>
+                            <span class="insight-value">${insights.performance.weeklyActivity}</span>
+                        </div>
+                    </div>
+                    <div class="insight-row">
+                        <div class="insight-item">
+                            <span class="insight-label">🎯 Weekly Catches:</span>
+                            <span class="insight-value">${insights.performance.weeklyeCatches || 0}</span>
+                        </div>
+                        <div class="insight-item">
+                            <span class="insight-label">📊 Monthly Activity:</span>
+                            <span class="insight-value">${insights.performance.monthlyActivity}</span>
+                        </div>
+                    </div>
+                `;
+
+                // Update top projects
+                const topProjects = document.getElementById('topProjects');
+                topProjects.innerHTML = insights.topProjects.map(project => `
+                    <li class="project-item">
+                        <div>
+                            <div class="project-name">${project.name}</div>
+                            <div class="project-region">${project.region}</div>
+                        </div>
+                        <div class="project-stats">
+                            <div class="project-efficiency">${project.efficiency}% efficient</div>
+                            <div class="project-traps">${project.trapCount} traps • ${project.totalCatches} catches</div>
+                        </div>
+                    </li>
+                `).join('');
+
+                // Update top lines
+                const topLines = document.getElementById('topLines');
+                if (insights.lineStats && insights.lineStats.length > 0) {
+                    topLines.innerHTML = insights.lineStats.slice(0, 5).map(line => `
+                        <li class="project-item">
+                            <div>
+                                <div class="project-name" style="color: ${line.lineColor || '#333'}">${line.lineName}</div>
+                                <div class="project-region">${line.trapCount} traps</div>
+                            </div>
+                            <div class="project-stats">
+                                <div class="project-efficiency">${line.averageEfficiency}% efficient</div>
+                                <div class="project-traps">${line.activeTraps} active • ${line.totalCatches} catches</div>
+                            </div>
+                        </li>
+                    `).join('');
+                } else {
+                    topLines.innerHTML = '<li style="color: #666; font-style: italic;">No line data available</li>';
+                }
+            }
+
+            // Show data source info
+            if (data.summary) {
+                console.log(`📊 Showing ${data.total} unique traps from ${data.summary.totalRawRecords} raw records`);
+            }
+
+            // Show dashboard
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+
+        function showError() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+        }
+
+        async function loadData(projectId = 'all') {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('dashboard').style.display = 'none';
+                document.getElementById('error').style.display = 'none';
+
+                const [statusData, insights] = await Promise.all([
+                    fetchTrapStatus(projectId, currentTimeFilter),
+                    projectId === 'all' ? fetchInsights(currentTimeFilter) : null
+                ]);
+
+                currentData = statusData;
+                insightsData = insights;
+
+                updateDashboard(statusData, insights);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError();
+            }
+        }
+
+
+
+        // Modal functionality
+        let allTrapDetails = [];
+        let currentFilter = 'all';
+        let dashboardConfig = {};
+        let linesData = [];
+
+        // Load dashboard configuration
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                if (response.ok) {
+                    dashboardConfig = await response.json();
+                }
+            } catch (error) {
+                console.warn('Could not load config:', error);
+            }
+        }
+
+        // Load lines data
+        async function loadLines() {
+            try {
+                const response = await fetch('/api/lines');
+                if (response.ok) {
+                    linesData = await response.json();
+                    populateLineFilter();
+                }
+            } catch (error) {
+                console.warn('Could not load lines:', error);
+            }
+        }
+
+        // Populate line filter dropdown
+        function populateLineFilter() {
+            const lineFilter = document.getElementById('lineFilter');
+            if (!lineFilter) return;
+
+            // Keep the "All Lines" option and add lines
+            lineFilter.innerHTML = '<option value="all">All Lines</option>';
+
+            linesData.forEach(line => {
+                const option = document.createElement('option');
+                option.value = line.id;
+                option.textContent = line.name;
+                option.style.color = line.color;
+                lineFilter.appendChild(option);
+            });
+        }
+
+        // Interactive drilldown functionality
+        function showTrapDetails(type) {
+            const modal = document.getElementById('trapModal');
+            const modalTitle = document.getElementById('modalTitle');
+
+            // Set modal title based on type with enhanced descriptions
+            const titles = {
+                'all': '🎯 All Traps - Complete Overview',
+                'active': '✅ Active Traps - Currently Operational',
+                'needsCheck': '⚠️ Traps Needing Attention - Require Maintenance',
+                'recentCatches': '🎉 Recent Catches - Success Stories',
+                'dailyCatches': '📅 Daily Catches - Today\'s Activity',
+                'topLine': '🏆 Top Performing Line - Best Results',
+                'topSpecies': '🦎 Top Species - Most Active Pest Type'
+            };
+
+            modalTitle.textContent = titles[type] || 'Trap Details';
+            currentFilter = type;
+
+            // Show modal and loading state
+            modal.style.display = 'block';
+            showModalLoading();
+
+            // Load trap details with server-side filtering
+            loadTrapDetailsFromServer();
+        }
+
+        async function loadTrapDetailsFromServer() {
+            try {
+                const params = new URLSearchParams({
+                    limit: '100',
+                    months: document.getElementById('globalTimeFilter')?.value || currentTimeFilter || '3',
+                    sortBy: document.getElementById('sortBy')?.value || 'efficiency',
+                    sortOrder: document.getElementById('sortOrder')?.value || 'desc',
+                    statusFilter: document.getElementById('statusFilter')?.value || 'all',
+                    efficiencyFilter: document.getElementById('efficiencyFilter')?.value || 'all',
+                    needsAttentionFilter: document.getElementById('needsAttentionFilter')?.value || 'all'
+                });
+
+                // Fix project filtering - use the project filter from modal if it exists
+                const modalProjectFilter = document.getElementById('projectFilter')?.value;
+                const mainProjectFilter = document.getElementById('projectSelect')?.value;
+                const projectFilter = modalProjectFilter && modalProjectFilter !== 'all' ? modalProjectFilter : mainProjectFilter;
+
+                if (projectFilter && projectFilter !== 'all') {
+                    // Find project ID by name
+                    const projects = await fetch('/api/projects').then(r => r.json());
+                    const project = projects.find(p => p.name === projectFilter);
+                    if (project) {
+                        params.append('projectId', project.id);
+                    }
+                }
+
+                const response = await fetch(`/api/traps/details?${params}`);
+                if (!response.ok) throw new Error('Failed to fetch trap details');
+
+                const data = await response.json();
+                allTrapDetails = data.traps;
+
+                // Populate project filter in modal
+                populateModalProjectFilter();
+
+                // Apply client-side filters and display
+                applyClientSideFilters();
+
+            } catch (error) {
+                console.error('Error loading trap details:', error);
+                showModalError();
+            }
+        }
+
+        function populateModalProjectFilter() {
+            const projectFilter = document.getElementById('projectFilter');
+
+            // Get unique projects from trap details
+            const uniqueProjects = new Map();
+            allTrapDetails.forEach(trap => {
+                if (trap.projectName && !uniqueProjects.has(trap.projectName)) {
+                    uniqueProjects.set(trap.projectName, {
+                        name: trap.projectName,
+                        region: trap.projectRegion
+                    });
+                }
+            });
+
+            // Clear existing options except "All Projects"
+            projectFilter.innerHTML = '<option value="all">All Projects</option>';
+
+            // Sort projects alphabetically
+            const sortedProjects = Array.from(uniqueProjects.values()).sort((a, b) => a.name.localeCompare(b.name));
+
+            sortedProjects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.name;
+                option.textContent = `${project.name} (${project.region})`;
+                projectFilter.appendChild(option);
+            });
+        }
+
+        function applyClientSideFilters() {
+            let filteredTraps = [...allTrapDetails];
+
+            // Apply original type filter from the clicked card
+            if (currentFilter === 'active') {
+                filteredTraps = filteredTraps.filter(trap => trap.isActive);
+            } else if (currentFilter === 'needsCheck') {
+                filteredTraps = filteredTraps.filter(trap => trap.needsCheck);
+            } else if (currentFilter === 'recentCatches') {
+                const oneWeekAgo = new Date();
+                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                filteredTraps = filteredTraps.filter(trap => {
+                    if (!trap.lastCatch) return false;
+                    return new Date(trap.lastCatch) > oneWeekAgo;
+                });
+            }
+
+            // Apply search filter with enhanced keywords including lines
+            const searchTerm = document.getElementById('searchFilter')?.value.toLowerCase();
+            if (searchTerm) {
+                filteredTraps = filteredTraps.filter(trap =>
+                    (trap.name && trap.name.toLowerCase().includes(searchTerm)) ||
+                    (trap.trapCode && trap.trapCode.toLowerCase().includes(searchTerm)) ||
+                    (trap.trapType && trap.trapType.toLowerCase().includes(searchTerm)) ||
+                    (trap.projectName && trap.projectName.toLowerCase().includes(searchTerm)) ||
+                    (trap.lineName && trap.lineName.toLowerCase().includes(searchTerm)) ||
+                    (trap.speciesCaught && trap.speciesCaught.some(species =>
+                        species.toLowerCase().includes(searchTerm)
+                    )) ||
+                    (trap.mostUsedBait && trap.mostUsedBait.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            // Apply line filter
+            const lineFilter = document.getElementById('lineFilter')?.value;
+            if (lineFilter && lineFilter !== 'all') {
+                filteredTraps = filteredTraps.filter(trap => trap.lineId === lineFilter);
+            }
+
+            displayTrapList(filteredTraps);
+        }
+
+        function displayTrapList(traps) {
+            const trapList = document.getElementById('trapList');
+            const showingCount = document.getElementById('showingCount');
+            const totalCount = document.getElementById('totalCount');
+
+            showingCount.textContent = traps.length;
+            totalCount.textContent = allTrapDetails.length;
+
+            if (traps.length === 0) {
+                trapList.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No traps found matching your criteria.</p>';
+            } else {
+                trapList.innerHTML = traps.map(trap => {
+                    const efficiencyClass = trap.efficiency >= 20 ? 'efficiency-high' :
+                        trap.efficiency >= 10 ? 'efficiency-medium' : 'efficiency-low';
+
+                    const lastUpdate = trap.lastUpdate ? new Date(trap.lastUpdate).toLocaleDateString() : 'Never';
+                    const lastCatch = trap.lastCatch ? new Date(trap.lastCatch).toLocaleDateString() : 'None';
+
+                    // Override status for recent catches - if they have recent catches, they should be considered active
+                    let displayActive = trap.isActive;
+                    let displayNeedsCheck = trap.needsCheck;
+
+                    if (currentFilter === 'recentCatches') {
+                        // If showing recent catches, these traps should be considered active
+                        displayActive = true;
+                        displayNeedsCheck = false; // Recent catches indicate the trap is working
+                    }
+
+                    return `
+                        <div class="trap-item" onclick="showTrapHistory('${trap.id}', '${trap.projectName}')" title="Click to view trap history">
+                            <div class="trap-header">
+                                <div class="trap-name">${trap.trapCode || trap.name}</div>
+                                <div class="trap-status ${displayActive ? 'status-active' : 'status-inactive'}">
+                                    ${displayActive ? 'Active' : 'Inactive'}
+                                </div>
+                            </div>
+                            <div class="trap-details">
+                                <div class="trap-metric">
+                                    <span class="trap-metric-label">🏷️ Type:</span>
+                                    <span class="trap-metric-value">${trap.trapType || 'Unknown'}</span>
+                                </div>
+                                <div class="trap-metric">
+                                    <span class="trap-metric-label">📍 Project:</span>
+                                    <span class="trap-metric-value">${trap.projectName}</span>
+                                </div>
+                                ${trap.lineName ? `
+                                <div class="trap-metric">
+                                    <span class="trap-metric-label">📏 Line:</span>
+                                    <span class="trap-metric-value" style="color: ${trap.lineColor || '#667eea'}">${trap.lineName}</span>
+                                </div>
+                                ` : ''}
+                                <div class="trap-metric">
+                                    <span class="trap-metric-label">🎯 Efficiency:</span>
+                                    <span class="trap-metric-value ${efficiencyClass}">${trap.efficiency.toFixed(1)}%</span>
+                                </div>
+                                <div class="trap-metric">
+                                    <span class="trap-metric-label">🔍 Checks:</span>
+                                    <span class="trap-metric-value">${trap.totalChecks}</span>
+                                </div>
+                                <div class="trap-metric">
+                                    <span class="trap-metric-label">🎉 Catches:</span>
+                                    <span class="trap-metric-value">${trap.totalCatches}</span>
+                                </div>
+                                <div class="trap-metric">
+                                    <span class="trap-metric-label">📅 Last Update:</span>
+                                    <span class="trap-metric-value">${lastUpdate}</span>
+                                </div>
+                                <div class="trap-metric">
+                                    <span class="trap-metric-label">🎯 Last Catch:</span>
+                                    <span class="trap-metric-value">${lastCatch}</span>
+                                </div>
+                                ${trap.mostUsedBait ? `
+                                <div class="trap-metric">
+                                    <span class="trap-metric-label">🍖 Bait:</span>
+                                    <span class="trap-metric-value">${trap.mostUsedBait}</span>
+                                </div>
+                                ` : ''}
+                                ${trap.speciesCaught && trap.speciesCaught.length > 0 ? `
+                                <div class="trap-metric">
+                                    <span class="trap-metric-label">🦎 Species:</span>
+                                    <span class="trap-metric-value">${trap.speciesCaught.join(', ')}</span>
+                                </div>
+                                ` : ''}
+                                ${trap.coordinates ? `
+                                <div class="trap-metric">
+                                    <span class="trap-metric-label">🗺️ Location:</span>
+                                    <span class="trap-metric-value">${trap.coordinates[1].toFixed(4)}, ${trap.coordinates[0].toFixed(4)}</span>
+                                </div>
+                                ` : ''}
+                                ${displayNeedsCheck ? '<div style="color: #dc3545; font-weight: 600; margin-top: 10px;">⚠️ Needs Attention</div>' : ''}
+                                ${currentFilter === 'recentCatches' ? '<div style="color: #28a745; font-weight: 600; margin-top: 10px;">🎉 Recent Success!</div>' : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            showModalContent();
+        }
+
+        function filterModalData() {
+            loadTrapDetailsFromServer();
+        }
+
+        function showModalLoading() {
+            document.getElementById('modalLoading').style.display = 'block';
+            document.getElementById('modalError').style.display = 'none';
+            document.getElementById('modalContent').style.display = 'none';
+        }
+
+        function showModalError() {
+            document.getElementById('modalLoading').style.display = 'none';
+            document.getElementById('modalError').style.display = 'block';
+            document.getElementById('modalContent').style.display = 'none';
+        }
+
+        function showModalContent() {
+            document.getElementById('modalLoading').style.display = 'none';
+            document.getElementById('modalError').style.display = 'none';
+            document.getElementById('modalContent').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('trapModal').style.display = 'none';
+            // Clear search filter
+            document.getElementById('searchFilter').value = '';
+        }
+
+        // Export functionality
+        function exportToCSV() {
+            if (allTrapDetails.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            const headers = [
+                'Trap Code', 'Trap Type', 'Project', 'Region', 'Status', 'Active',
+                'Efficiency (%)', 'Total Checks', 'Total Catches', 'Last Update',
+                'Last Catch', 'Species Caught', 'Most Used Bait', 'Needs Check',
+                'Condition', 'Latitude', 'Longitude'
+            ];
+
+            const csvContent = [
+                headers.join(','),
+                ...allTrapDetails.map(trap => [
+                    `"${trap.trapCode || trap.name}"`,
+                    `"${trap.trapType || 'Unknown'}"`,
+                    `"${trap.projectName}"`,
+                    `"${trap.projectRegion}"`,
+                    `"${trap.status}"`,
+                    trap.isActive ? 'Yes' : 'No',
+                    trap.efficiency.toFixed(1),
+                    trap.totalChecks,
+                    trap.totalCatches,
+                    trap.lastUpdate ? new Date(trap.lastUpdate).toLocaleDateString() : '',
+                    trap.lastCatch ? new Date(trap.lastCatch).toLocaleDateString() : '',
+                    `"${(trap.speciesCaught || []).join('; ')}"`,
+                    `"${trap.mostUsedBait || ''}"`,
+                    trap.needsCheck ? 'Yes' : 'No',
+                    `"${trap.condition || ''}"`,
+                    trap.coordinates ? trap.coordinates[1].toFixed(6) : '',
+                    trap.coordinates ? trap.coordinates[0].toFixed(6) : ''
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `trapnz-traps-${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function (event) {
+            const modal = document.getElementById('trapModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Trap History functionality
+        async function showTrapHistory(trapId, projectName) {
+            const modal = document.getElementById('trapHistoryModal');
+            const title = document.getElementById('historyModalTitle');
+
+            title.textContent = `Trap History - ${trapId}`;
+            modal.style.display = 'block';
+
+            // Show loading state
+            document.getElementById('historyLoading').style.display = 'block';
+            document.getElementById('historyError').style.display = 'none';
+            document.getElementById('historyContent').style.display = 'none';
+
+            try {
+                // Find project ID
+                const projects = await fetch('/api/projects').then(r => r.json());
+                const project = projects.find(p => p.name === projectName);
+
+                if (!project) {
+                    throw new Error('Project not found');
+                }
+
+                const response = await fetch(`/api/traps/${trapId}/history?projectId=${project.id}`);
+                if (!response.ok) throw new Error('Failed to fetch trap history');
+
+                const data = await response.json();
+                displayTrapHistory(data);
+
+            } catch (error) {
+                console.error('Error loading trap history:', error);
+                document.getElementById('historyLoading').style.display = 'none';
+                document.getElementById('historyError').style.display = 'block';
+                document.getElementById('historyContent').style.display = 'none';
+            }
+        }
+
+        function displayTrapHistory(data) {
+            const { history, stats } = data;
+
+            // Display statistics
+            const statsContainer = document.getElementById('historyStats');
+            statsContainer.innerHTML = `
+                <div class="history-stat-card">
+                    <div class="history-stat-value">${stats.totalRecords}</div>
+                    <div class="history-stat-label">Total Records</div>
+                </div>
+                <div class="history-stat-card">
+                    <div class="history-stat-value">${stats.totalCatches}</div>
+                    <div class="history-stat-label">Total Catches</div>
+                </div>
+                <div class="history-stat-card">
+                    <div class="history-stat-value">${stats.uniqueSpecies.length}</div>
+                    <div class="history-stat-label">Species Types</div>
+                </div>
+                <div class="history-stat-card">
+                    <div class="history-stat-value">${stats.statusChanges}</div>
+                    <div class="history-stat-label">Status Changes</div>
+                </div>
+            `;
+
+            // Display timeline
+            const timelineContainer = document.getElementById('historyTimeline');
+
+            if (history.length === 0) {
+                timelineContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No history records found.</p>';
+            } else {
+                timelineContainer.innerHTML = history.map(record => {
+                    const date = record.date ? new Date(record.date).toLocaleDateString() : 'Unknown date';
+                    const species = record.species && record.species.toLowerCase() !== 'none' ? record.species : null;
+
+                    let itemClass = '';
+                    if (species) {
+                        itemClass = 'catch';
+                    } else if (record.status && record.status.toLowerCase().includes('maintenance')) {
+                        itemClass = 'maintenance';
+                    } else if (record.condition && record.condition.toLowerCase().includes('issue')) {
+                        itemClass = 'issue';
+                    }
+
+                    return `
+                        <div class="timeline-item ${itemClass}">
+                            <div class="timeline-date">📅 ${date}</div>
+                            <div class="timeline-status">📋 Status: ${record.status || 'Unknown'}</div>
+                            ${species ? `
+                                <div style="margin: 5px 0;">
+                                    🎯 Catch: <span class="timeline-species">${species}</span>
+                                </div>
+                            ` : ''}
+                            ${record.bait ? `<div>🍖 Bait: ${record.bait}</div>` : ''}
+                            ${record.condition ? `<div>🔧 Condition: ${record.condition}</div>` : ''}
+                            ${record.outcome ? `<div>📊 Outcome: ${record.outcome}</div>` : ''}
+                            ${record.recordedBy ? `<div>👤 Recorded by: ${record.recordedBy}</div>` : ''}
+                            ${record.notes ? `<div class="timeline-notes">📝 ${record.notes}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Show content
+            document.getElementById('historyLoading').style.display = 'none';
+            document.getElementById('historyError').style.display = 'none';
+            document.getElementById('historyContent').style.display = 'block';
+        }
+
+        function closeTrapHistoryModal() {
+            document.getElementById('trapHistoryModal').style.display = 'none';
+        }
+
+        // Close history modal when clicking outside
+        window.addEventListener('click', function (event) {
+            const historyModal = document.getElementById('trapHistoryModal');
+            if (event.target === historyModal) {
+                closeTrapHistoryModal();
+            }
+        });
+
+        // Start the application
+        async function initialize() {
+            try {
+                await loadConfig();
+                await loadLines();
+                await fetchProjects();
+                await loadData();
+
+                // Set up project selector
+                document.getElementById('projectSelect').addEventListener('change', function () {
+                    loadData(this.value);
+                });
+
+                // Auto-refresh every 5 minutes
+                setInterval(() => {
+                    const currentProject = document.getElementById('projectSelect').value;
+                    loadData(currentProject);
+                }, 5 * 60 * 1000);
+
+            } catch (error) {
+                console.error('Failed to initialize dashboard:', error);
+                showError();
+            }
+        }
+
+        // Map View functionality
+        function showMapView() {
+            const modal = document.getElementById('mapModal');
+            modal.style.display = 'block';
+
+            // Initialize map with trap locations
+            initializeMap();
+        }
+
+        function closeMapModal() {
+            document.getElementById('mapModal').style.display = 'none';
+        }
+
+        function initializeMap() {
+            const mapContainer = document.getElementById('mapContainer');
+
+            // Create a simple visual map representation
+            mapContainer.innerHTML = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 8px;">
+                        <h4 style="margin: 0 0 10px 0;">Wellington Region Traps</h4>
+                        <div id="mapStats"></div>
+                    </div>
+                    <div id="trapMarkers" style="position: relative; width: 100%; height: 100%;"></div>
+                </div>
+            `;
+
+            // Add trap markers based on current data
+            displayTrapMarkers();
+        }
+
+        function displayTrapMarkers() {
+            const markersContainer = document.getElementById('trapMarkers');
+            const statsContainer = document.getElementById('mapStats');
+
+            if (!allTrapDetails || allTrapDetails.length === 0) {
+                markersContainer.innerHTML = '<div style="text-align: center; padding-top: 200px; color: white;">No trap data available</div>';
+                return;
+            }
+
+            // Create visual representation of traps
+            let markersHtml = '';
+            let activeCount = 0, needsAttentionCount = 0, inactiveCount = 0;
+
+            allTrapDetails.slice(0, 20).forEach((trap, index) => {
+                const x = 10 + (index % 8) * 120;
+                const y = 80 + Math.floor(index / 8) * 80;
+
+                let color = '#6c757d'; // inactive
+                if (trap.needsCheck) {
+                    color = '#dc3545'; // needs attention
+                    needsAttentionCount++;
+                } else if (trap.isActive) {
+                    color = '#28a745'; // active
+                    activeCount++;
+                } else {
+                    inactiveCount++;
+                }
+
+                markersHtml += `
+                    <div style="position: absolute; left: ${x}px; top: ${y}px;
+                                width: 12px; height: 12px; border-radius: 50%;
+                                background: ${color}; border: 2px solid white;
+                                cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+                         title="${trap.trapCode} - ${trap.projectName}&#10;Status: ${trap.isActive ? 'Active' : 'Inactive'}&#10;Efficiency: ${trap.efficiency}%&#10;Last Update: ${trap.lastUpdate ? new Date(trap.lastUpdate).toLocaleDateString() : 'Unknown'}"
+                         onclick="showTrapHistory('${trap.id}', '${trap.projectName}')">
+                    </div>
+                `;
+            });
+
+            markersContainer.innerHTML = markersHtml;
+
+            statsContainer.innerHTML = `
+                <div style="font-size: 0.9em;">
+                    <div><span style="color: #28a745;">●</span> Active: ${activeCount}</div>
+                    <div><span style="color: #dc3545;">●</span> Needs Attention: ${needsAttentionCount}</div>
+                    <div><span style="color: #6c757d;">●</span> Inactive: ${inactiveCount}</div>
+                </div>
+            `;
+        }
+
+        // Bulk Operations functionality
+        let selectedTraps = new Set();
+
+        function showBulkOperations() {
+            const modal = document.getElementById('bulkModal');
+            modal.style.display = 'block';
+
+            // Populate trap list with checkboxes
+            populateBulkTrapList();
+        }
+
+        function closeBulkModal() {
+            document.getElementById('bulkModal').style.display = 'none';
+            selectedTraps.clear();
+            updateSelectedCount();
+        }
+
+        function populateBulkTrapList() {
+            const container = document.getElementById('bulkTrapList');
+
+            if (!allTrapDetails || allTrapDetails.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No trap data available</p>';
+                return;
+            }
+
+            const trapsHtml = allTrapDetails.map(trap => `
+                <div style="display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+                    <input type="checkbox" class="trap-checkbox" value="${trap.id}" onchange="toggleTrapSelection('${trap.id}')">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600;">${trap.trapCode} - ${trap.trapType}</div>
+                        <div style="font-size: 0.9em; color: #666;">
+                            ${trap.projectName} | Efficiency: ${trap.efficiency}% |
+                            ${trap.needsCheck ? '⚠️ Needs Attention' : '✅ OK'}
+                        </div>
+                    </div>
+                    <div style="text-align: right; font-size: 0.9em; color: #666;">
+                        Last: ${trap.lastUpdate ? new Date(trap.lastUpdate).toLocaleDateString() : 'Unknown'}
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = trapsHtml;
+            updateSelectedCount();
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAllTraps');
+            const checkboxes = document.querySelectorAll('.trap-checkbox');
+
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+                if (selectAll.checked) {
+                    selectedTraps.add(checkbox.value);
+                } else {
+                    selectedTraps.delete(checkbox.value);
+                }
+            });
+
+            updateSelectedCount();
+        }
+
+        function toggleTrapSelection(trapId) {
+            if (selectedTraps.has(trapId)) {
+                selectedTraps.delete(trapId);
+            } else {
+                selectedTraps.add(trapId);
+            }
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const countElement = document.getElementById('selectedCount');
+            countElement.textContent = `${selectedTraps.size} selected`;
+        }
+
+        function bulkMarkAsChecked() {
+            if (selectedTraps.size === 0) {
+                alert('Please select at least one trap');
+                return;
+            }
+
+            const trapIds = Array.from(selectedTraps);
+            alert(`Marked ${trapIds.length} traps as checked!\n(This would update the database in a real implementation)`);
+
+            // In a real implementation, you would send this to the server:
+            // await fetch('/api/traps/bulk-update', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ trapIds, action: 'mark_checked' })
+            // });
+        }
+
+        function bulkMarkNeedsAttention() {
+            if (selectedTraps.size === 0) {
+                alert('Please select at least one trap');
+                return;
+            }
+
+            const trapIds = Array.from(selectedTraps);
+            alert(`Marked ${trapIds.length} traps as needing attention!\n(This would update the database in a real implementation)`);
+        }
+
+        function bulkExportSelected() {
+            if (selectedTraps.size === 0) {
+                alert('Please select at least one trap');
+                return;
+            }
+
+            const selectedTrapData = allTrapDetails.filter(trap => selectedTraps.has(trap.id));
+            exportTrapsToCSV(selectedTrapData, 'selected_traps');
+        }
+
+        function exportTrapsToCSV(traps, filename = 'traps') {
+            const headers = [
+                'Trap Code', 'Trap Type', 'Project', 'Status', 'Efficiency %',
+                'Total Checks', 'Total Catches', 'Last Update', 'Last Catch',
+                'Needs Check', 'Coordinates', 'Species Caught', 'Most Used Bait'
+            ];
+
+            const csvContent = [
+                headers.join(','),
+                ...traps.map(trap => [
+                    trap.trapCode || '',
+                    trap.trapType || '',
+                    trap.projectName || '',
+                    trap.isActive ? 'Active' : 'Inactive',
+                    trap.efficiency || 0,
+                    trap.totalChecks || 0,
+                    trap.totalCatches || 0,
+                    trap.lastUpdate ? new Date(trap.lastUpdate).toLocaleDateString() : '',
+                    trap.lastCatch ? new Date(trap.lastCatch).toLocaleDateString() : '',
+                    trap.needsCheck ? 'Yes' : 'No',
+                    trap.coordinates ? trap.coordinates.join(', ') : '',
+                    trap.speciesCaught ? trap.speciesCaught.join('; ') : '',
+                    trap.mostUsedBait || ''
+                ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+            ].join('\\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${filename}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Close modals when clicking outside
+        window.addEventListener('click', function (event) {
+            const historyModal = document.getElementById('trapHistoryModal');
+            const mapModal = document.getElementById('mapModal');
+            const bulkModal = document.getElementById('bulkModal');
+
+            if (event.target === historyModal) {
+                closeTrapHistoryModal();
+            } else if (event.target === mapModal) {
+                closeMapModal();
+            } else if (event.target === bulkModal) {
+                closeBulkModal();
+            }
+        });
+
+        // Load real-time alerts with time filter
+        async function loadAlerts(months = null) {
+            try {
+                // Use the provided months parameter or get from global time filter
+                const timeFilter = months || document.getElementById('globalTimeFilter')?.value || '3';
+                const response = await fetch(`/api/alerts?months=${timeFilter}`);
+                if (response.ok) {
+                    const alertsData = await response.json();
+                    displayAlerts(alertsData);
+                } else {
+                    document.getElementById('alertsList').innerHTML = '<div style="color: #666; font-style: italic;">No alerts to display</div>';
+                }
+            } catch (error) {
+                console.error('Error loading alerts:', error);
+                document.getElementById('alertsList').innerHTML = '<div style="color: #dc3545;">Failed to load alerts</div>';
+            }
+        }
+
+        // Enhanced alert system with clickable drilldowns
+        function displayAlerts(alertsData) {
+            const container = document.getElementById('alertsList');
+            const badge = document.getElementById('alertBadge');
+
+            if (!alertsData || !alertsData.alerts || alertsData.alerts.length === 0) {
+                container.innerHTML = '<div style="color: #666; font-style: italic; padding: 15px;">✅ No active alerts - all systems running smoothly!</div>';
+                badge.textContent = '0';
+                badge.style.background = '#28a745';
+                return;
+            }
+
+            badge.textContent = alertsData.summary.total;
+
+            // Color badge based on highest priority alert
+            if (alertsData.summary.critical > 0) {
+                badge.style.background = '#dc3545';
+            } else if (alertsData.summary.high > 0) {
+                badge.style.background = '#fd7e14';
+            } else if (alertsData.summary.medium > 0) {
+                badge.style.background = '#ffc107';
+            } else {
+                badge.style.background = '#17a2b8';
+            }
+
+            container.innerHTML = alertsData.alerts.map(alert => {
+                const levelColors = {
+                    'critical': '#dc3545',
+                    'high': '#fd7e14',
+                    'medium': '#ffc107',
+                    'info': '#17a2b8'
+                };
+
+                const levelIcons = {
+                    'critical': '🔴',
+                    'high': '🟠',
+                    'medium': '🟡',
+                    'info': '🔵'
+                };
+
+                return `
+                    <div class="alert-item" style="background: rgba(255,255,255,0.9); border-left: 4px solid ${levelColors[alert.level]}; border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.3s ease;"
+                         onclick="drillDownAlert('${alert.type}', '${alert.level}')"
+                         onmouseover="this.style.background='rgba(255,255,255,1)'; this.style.transform='translateY(-2px)'"
+                         onmouseout="this.style.background='rgba(255,255,255,0.9)'; this.style.transform='translateY(0px)'"
+                         title="Click to view affected traps">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; color: #333; margin-bottom: 4px;">
+                                    ${levelIcons[alert.level]} ${alert.type} (${alert.count})
+                                </div>
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 8px;">
+                                    ${alert.message}
+                                </div>
+                                <div style="font-size: 0.8em; color: ${levelColors[alert.level]}; font-weight: 500;">
+                                    💡 ${alert.action}
+                                </div>
+                            </div>
+                            <div style="color: ${levelColors[alert.level]}; font-size: 1.2em;">
+                                →
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Alert drilldown functionality
+        async function drillDownAlert(alertType, alertLevel) {
+            const modal = document.getElementById('trapModal');
+            const modalTitle = document.getElementById('modalTitle');
+
+            modalTitle.textContent = `🚨 ${alertType} Alert - ${alertLevel.toUpperCase()} Priority`;
+            currentFilter = 'alert';
+            currentAlertType = alertType;
+
+            modal.style.display = 'block';
+            showModalLoading();
+
+            try {
+                // Use current global time filter for consistency
+                const timeFilter = currentTimeFilter || '3';
+
+                // Use the dedicated alert endpoint that applies the EXACT same logic as alerts
+                const response = await fetch(`/api/alerts/${encodeURIComponent(alertType)}/traps?months=${timeFilter}`);
+                if (!response.ok) throw new Error('Failed to fetch alert details');
+
+                const data = await response.json();
+                allTrapDetails = data.traps;
+
+                displayTrapList(data.traps);
+
+            } catch (error) {
+                console.error('Error loading alert details:', error);
+                showModalError();
+            }
+        }
+
+        // Enhanced drilldown for line performance
+        async function drillDownLine(lineName) {
+            const modal = document.getElementById('trapModal');
+            const modalTitle = document.getElementById('modalTitle');
+
+            modalTitle.textContent = `📏 Line Details: ${lineName}`;
+            currentFilter = 'line';
+            currentLineFilter = lineName;
+
+            modal.style.display = 'block';
+            showModalLoading();
+
+            try {
+                const response = await fetch(`/api/traps/details?lineName=${encodeURIComponent(lineName)}&limit=50`);
+                if (!response.ok) throw new Error('Failed to fetch line details');
+
+                const data = await response.json();
+                allTrapDetails = data.traps;
+
+                // Add line-specific statistics
+                const lineStats = calculateLineStatistics(allTrapDetails);
+                displayLineSpecificModal(allTrapDetails, lineStats, lineName);
+
+            } catch (error) {
+                console.error('Error loading line details:', error);
+                showModalError();
+            }
+        }
+
+        function displayLineSpecificModal(traps, stats, lineName) {
+            const trapList = document.getElementById('trapList');
+            const showingCount = document.getElementById('showingCount');
+            const totalCount = document.getElementById('totalCount');
+
+            showingCount.textContent = traps.length;
+            totalCount.textContent = traps.length;
+
+            // Create line summary header
+            const summaryHtml = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 15px 0; color: white;">📏 ${lineName} Performance Summary</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold;">${traps.length}</div>
+                            <div style="font-size: 0.9em; opacity: 0.9;">Total Traps</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold;">${traps.filter(t => t.isActive).length}</div>
+                            <div style="font-size: 0.9em; opacity: 0.9;">Active</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold;">${traps.reduce((sum, t) => sum + (t.totalCatches || 0), 0)}</div>
+                            <div style="font-size: 0.9em; opacity: 0.9;">Total Catches</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold;">${(traps.reduce((sum, t) => sum + (t.efficiency || 0), 0) / traps.length).toFixed(1)}%</div>
+                            <div style="font-size: 0.9em; opacity: 0.9;">Avg Efficiency</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (traps.length === 0) {
+                trapList.innerHTML = summaryHtml + '<p style="text-align: center; color: #666; padding: 40px;">No traps found on this line.</p>';
+            } else {
+                const trapsHtml = traps.map(trap => {
+                    const efficiencyClass = trap.efficiency >= 20 ? 'efficiency-high' :
+                        trap.efficiency >= 10 ? 'efficiency-medium' : 'efficiency-low';
+
+                    const lastUpdate = trap.lastUpdate ? new Date(trap.lastUpdate).toLocaleDateString() : 'Never';
+                    const lastCatch = trap.lastCatch ? new Date(trap.lastCatch).toLocaleDateString() : 'None';
+
+                    return `
+                        <div class="trap-item" onclick="showTrapHistory('${trap.id}', '${trap.projectName}')" title="Click for detailed history">
+                            <div class="trap-header">
+                                <div class="trap-name">${trap.trapCode || trap.name}</div>
+                                <div class="trap-status ${trap.isActive ? 'status-active' : 'status-inactive'}">
+                                    ${trap.isActive ? 'Active' : 'Inactive'}
+                                </div>
+                            </div>
+                            <div class="trap-details">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <div class="trap-metric">
+                                        <span class="trap-metric-label">🎯 Efficiency:</span>
+                                        <span class="trap-metric-value ${efficiencyClass}">${trap.efficiency.toFixed(1)}%</span>
+                                    </div>
+                                    <div class="trap-metric">
+                                        <span class="trap-metric-label">🎉 Catches:</span>
+                                        <span class="trap-metric-value">${trap.totalCatches || 0}</span>
+                                    </div>
+                                    <div class="trap-metric">
+                                        <span class="trap-metric-label">📅 Last Update:</span>
+                                        <span class="trap-metric-value">${lastUpdate}</span>
+                                    </div>
+                                    <div class="trap-metric">
+                                        <span class="trap-metric-label">🎯 Last Catch:</span>
+                                        <span class="trap-metric-value">${lastCatch}</span>
+                                    </div>
+                                </div>
+                                ${trap.needsCheck ? '<div style="color: #dc3545; font-weight: 600; margin-top: 10px;">⚠️ Needs Attention</div>' : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                trapList.innerHTML = summaryHtml + trapsHtml;
+            }
+
+            showModalContent();
+        }
+
+        function calculateLineStatistics(traps) {
+            return {
+                totalTraps: traps.length,
+                activeTraps: traps.filter(t => t.isActive).length,
+                totalCatches: traps.reduce((sum, t) => sum + (t.totalCatches || 0), 0),
+                avgEfficiency: traps.length > 0 ? traps.reduce((sum, t) => sum + (t.efficiency || 0), 0) / traps.length : 0,
+                needsAttention: traps.filter(t => t.needsCheck).length
+            };
+        }
+
+        // Enhanced drilldown for line performance
+        async function drillDownLine(lineName) {
+            const modal = document.getElementById('trapModal');
+            const modalTitle = document.getElementById('modalTitle');
+
+            modalTitle.textContent = `📏 Line Details: ${lineName}`;
+            currentFilter = 'line';
+            currentLineFilter = lineName;
+
+            modal.style.display = 'block';
+            showModalLoading();
+
+            try {
+                const response = await fetch(`/api/traps/details?lineName=${encodeURIComponent(lineName)}&limit=50`);
+                if (!response.ok) throw new Error('Failed to fetch line details');
+
+                const data = await response.json();
+                allTrapDetails = data.traps;
+
+                // Add line-specific statistics
+                const lineStats = calculateLineStatistics(allTrapDetails);
+                displayLineSpecificModal(allTrapDetails, lineStats, lineName);
+
+            } catch (error) {
+                console.error('Error loading line details:', error);
+                showModalError();
+            }
+        }
+
+        function displayLineSpecificModal(traps, stats, lineName) {
+            const trapList = document.getElementById('trapList');
+            const showingCount = document.getElementById('showingCount');
+            const totalCount = document.getElementById('totalCount');
+
+            showingCount.textContent = traps.length;
+            totalCount.textContent = traps.length;
+
+            // Create line summary header
+            const summaryHtml = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 15px 0; color: white;">📏 ${lineName} Performance Summary</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold;">${traps.length}</div>
+                            <div style="font-size: 0.9em; opacity: 0.9;">Total Traps</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold;">${traps.filter(t => t.isActive).length}</div>
+                            <div style="font-size: 0.9em; opacity: 0.9;">Active</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold;">${traps.reduce((sum, t) => sum + (t.totalCatches || 0), 0)}</div>
+                            <div style="font-size: 0.9em; opacity: 0.9;">Total Catches</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold;">${(traps.reduce((sum, t) => sum + (t.efficiency || 0), 0) / traps.length).toFixed(1)}%</div>
+                            <div style="font-size: 0.9em; opacity: 0.9;">Avg Efficiency</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (traps.length === 0) {
+                trapList.innerHTML = summaryHtml + '<p style="text-align: center; color: #666; padding: 40px;">No traps found on this line.</p>';
+            } else {
+                const trapsHtml = traps.map(trap => {
+                    const efficiencyClass = trap.efficiency >= 20 ? 'efficiency-high' :
+                        trap.efficiency >= 10 ? 'efficiency-medium' : 'efficiency-low';
+
+                    const lastUpdate = trap.lastUpdate ? new Date(trap.lastUpdate).toLocaleDateString() : 'Never';
+                    const lastCatch = trap.lastCatch ? new Date(trap.lastCatch).toLocaleDateString() : 'None';
+
+                    return `
+                        <div class="trap-item" onclick="showTrapHistory('${trap.id}', '${trap.projectName}')" title="Click for detailed history">
+                            <div class="trap-header">
+                                <div class="trap-name">${trap.trapCode || trap.name}</div>
+                                <div class="trap-status ${trap.isActive ? 'status-active' : 'status-inactive'}">
+                                    ${trap.isActive ? 'Active' : 'Inactive'}
+                                </div>
+                            </div>
+                            <div class="trap-details">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <div class="trap-metric">
+                                        <span class="trap-metric-label">🎯 Efficiency:</span>
+                                        <span class="trap-metric-value ${efficiencyClass}">${trap.efficiency.toFixed(1)}%</span>
+                                    </div>
+                                    <div class="trap-metric">
+                                        <span class="trap-metric-label">🎉 Catches:</span>
+                                        <span class="trap-metric-value">${trap.totalCatches || 0}</span>
+                                    </div>
+                                    <div class="trap-metric">
+                                        <span class="trap-metric-label">📅 Last Update:</span>
+                                        <span class="trap-metric-value">${lastUpdate}</span>
+                                    </div>
+                                    <div class="trap-metric">
+                                        <span class="trap-metric-label">🎯 Last Catch:</span>
+                                        <span class="trap-metric-value">${lastCatch}</span>
+                                    </div>
+                                </div>
+                                ${trap.needsCheck ? '<div style="color: #dc3545; font-weight: 600; margin-top: 10px;">⚠️ Needs Attention</div>' : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                trapList.innerHTML = summaryHtml + trapsHtml;
+            }
+
+            showModalContent();
+        }
+
+        function calculateLineStatistics(traps) {
+            return {
+                totalTraps: traps.length,
+                activeTraps: traps.filter(t => t.isActive).length,
+                totalCatches: traps.reduce((sum, t) => sum + (t.totalCatches || 0), 0),
+                avgEfficiency: traps.length > 0 ? traps.reduce((sum, t) => sum + (t.efficiency || 0), 0) / traps.length : 0,
+                needsAttention: traps.filter(t => t.needsCheck).length
+            };
+        }
+
+        // Enhanced alert system with clickable drilldowns
+        function displayAlerts(alertsData) {
+            const container = document.getElementById('alertsList');
+            const badge = document.getElementById('alertBadge');
+
+            if (!alertsData || !alertsData.alerts || alertsData.alerts.length === 0) {
+                container.innerHTML = '<div style="color: #666; font-style: italic; padding: 15px;">✅ No active alerts - all systems running smoothly!</div>';
+                badge.textContent = '0';
+                badge.style.background = '#28a745';
+                return;
+            }
+
+            badge.textContent = alertsData.summary.total;
+
+            // Color badge based on highest priority alert
+            if (alertsData.summary.critical > 0) {
+                badge.style.background = '#dc3545';
+            } else if (alertsData.summary.high > 0) {
+                badge.style.background = '#fd7e14';
+            } else if (alertsData.summary.medium > 0) {
+                badge.style.background = '#ffc107';
+            } else {
+                badge.style.background = '#17a2b8';
+            }
+
+            container.innerHTML = alertsData.alerts.map(alert => {
+                const levelColors = {
+                    'critical': '#dc3545',
+                    'high': '#fd7e14',
+                    'medium': '#ffc107',
+                    'info': '#17a2b8'
+                };
+
+                const levelIcons = {
+                    'critical': '🔴',
+                    'high': '🟠',
+                    'medium': '🟡',
+                    'info': '🔵'
+                };
+
+                return `
+                    <div class="alert-item" style="background: rgba(255,255,255,0.9); border-left: 4px solid ${levelColors[alert.level]}; border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.3s ease;"
+                         onclick="drillDownAlert('${alert.type}', '${alert.level}')"
+                         title="Click to view affected traps">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; color: #333; margin-bottom: 4px;">
+                                    ${levelIcons[alert.level]} ${alert.type} (${alert.count})
+                                </div>
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 8px;">
+                                    ${alert.message}
+                                </div>
+                                <div style="font-size: 0.8em; color: ${levelColors[alert.level]}; font-weight: 500;">
+                                    💡 ${alert.action}
+                                </div>
+                            </div>
+                            <div style="color: ${levelColors[alert.level]}; font-size: 1.2em;">
+                                →
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Alert drilldown functionality
+        async function drillDownAlert(alertType, alertLevel) {
+            const modal = document.getElementById('trapModal');
+            const modalTitle = document.getElementById('modalTitle');
+
+            modalTitle.textContent = `🚨 ${alertType} Alert - ${alertLevel.toUpperCase()} Priority`;
+            currentFilter = 'alert';
+            currentAlertType = alertType;
+
+            modal.style.display = 'block';
+            showModalLoading();
+
+            try {
+                // Fetch traps based on alert type
+                let filterParams = '';
+
+                switch (alertType) {
+                    case 'Inactive High Performers':
+                        filterParams = 'statusFilter=all&months=999';
+                        break;
+                    case 'Overdue Maintenance':
+                        filterParams = 'months=999&statusFilter=all';
+                        break;
+                    case 'Low Efficiency':
+                        filterParams = 'statusFilter=active&efficiencyFilter=low';
+                        break;
+                    case 'Recent Successes':
+                        filterParams = 'months=1';
+                        currentFilter = 'recentCatches';
+                        break;
+                    default:
+                        filterParams = 'statusFilter=all';
+                }
+
+                const response = await fetch(`/api/traps/details?${filterParams}&limit=1000`);
+                if (!response.ok) throw new Error('Failed to fetch alert details');
+
+                const data = await response.json();
+                allTrapDetails = data.traps;
+
+                // Apply specific alert filtering
+                let filteredTraps = [...allTrapDetails];
+                const now = new Date();
+
+                switch (alertType) {
+                    case 'Inactive High Performers':
+                        // Apply same logic as alert generation
+                        const oneWeekAgo = new Date();
+                        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                        filteredTraps = filteredTraps.filter(trap => {
+                            const hasRecentCatch = trap.lastCatch && new Date(trap.lastCatch) > oneWeekAgo;
+                            return !trap.isActive && trap.efficiency > 20 && !hasRecentCatch;
+                        });
+                        break;
+                    case 'Overdue Maintenance':
+                        filteredTraps = filteredTraps.filter(trap => {
+                            if (!trap.lastUpdate) return false;
+                            const daysSince = (now - new Date(trap.lastUpdate)) / (1000 * 60 * 60 * 24);
+                            // Include both active and inactive traps that haven't been checked in 30+ days
+                            return daysSince > 14;
+                        });
+                        break;
+                    case 'Low Efficiency':
+                        filteredTraps = filteredTraps.filter(trap => trap.isActive && trap.efficiency < 0 && trap.totalChecks > 5);
+                        break;
+                    case 'Recent Successes':
+                        const oneDayAgo = new Date();
+                        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+                        filteredTraps = filteredTraps.filter(trap => {
+                            if (!trap.lastCatch) return false;
+                            return new Date(trap.lastCatch) > oneDayAgo;
+                        });
+                        break;
+                }
+
+                displayTrapList(filteredTraps);
+
+            } catch (error) {
+                console.error('Error loading alert details:', error);
+                showModalError();
+            }
+        }
+
+        // Smart recommendations based on data analysis
+        async function generateSmartRecommendations() {
+            try {
+                const response = await fetch('/api/analytics/insights');
+                if (!response.ok) throw new Error('Failed to fetch insights');
+
+                const insights = await response.json();
+                return insights;
+            } catch (error) {
+                console.error('Error generating recommendations:', error);
+                return null;
+            }
+        }
+
+        // Enhanced performance indicator with real-time updates
+        function updatePerformanceIndicator(metrics) {
+            const indicator = document.getElementById('performanceIndicator');
+            const text = document.getElementById('performanceText');
+
+            if (!indicator || !text) return;
+
+            // Calculate performance score
+            const efficiencyScore = Math.min(100, (metrics.avgEfficiency || 0) * 5);
+            const activityScore = Math.min(100, ((metrics.activeTraps || 0) / (metrics.totalTraps || 1)) * 100);
+            const recentActivityScore = Math.min(100, (metrics.recentCatches || 0) * 20);
+
+            const overallScore = Math.round((efficiencyScore + activityScore + recentActivityScore) / 3);
+
+            let status = 'Excellent';
+            let color = '#28a745';
+            let emoji = '🌟';
+
+            if (overallScore < 70) {
+                status = 'Good';
+                color = '#17a2b8';
+                emoji = '✅';
+            }
+            if (overallScore < 50) {
+                status = 'Fair';
+                color = '#ffc107';
+                emoji = '⚠️';
+            }
+            if (overallScore < 30) {
+                status = 'Poor';
+                color = '#dc3545';
+                emoji = '🔴';
+            }
+
+            indicator.style.background = `linear-gradient(45deg, ${color}, ${color}dd)`;
+            text.innerHTML = `
+                ${emoji} System Performance: ${status} (${overallScore}/100)<br>
+                <small>Efficiency: ${efficiencyScore.toFixed(0)}% | Activity: ${activityScore.toFixed(0)}% | Recent: ${recentActivityScore.toFixed(0)}%</small>
+            `;
+        }
+
+        initialize();
+
+        // Auto-refresh alerts every 5 minutes
+        setInterval(loadAlerts, 5 * 60 * 1000);
+    </script>
+</body>
+
+</html>
